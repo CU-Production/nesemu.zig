@@ -35,14 +35,20 @@ pub fn buildSokol(b: *Builder, target: CrossTarget, mode: Mode, config: Config, 
         "sokol_debugtext.c",
         "sokol_shape.c",
     };
-    // var _backend = config.backend;
-    // if (_backend == .auto) {
-    //     if (lib.target.isDarwin()) { _backend = .metal; }
-    //     else if (lib.target.isWindows()) { _backend = .d3d11; }
-    //     else { _backend = .gl; }
-    // }
     var _backend = config.backend;
-    _backend = .gl;
+    if (_backend == .auto) {
+        // if (lib.target.isDarwin()) { _backend = .metal; }
+        if (lib.target.isDarwin()) {
+            _backend = .gl;
+        } else if (lib.target.isWindows()) {
+            _backend = .d3d11;
+            // _backend = .gl;
+        } else {
+            _backend = .gl;
+        }
+    }
+    // var _backend = config.backend;
+    // _backend = .gl;
     const backend_option = switch (_backend) {
         .d3d11 => "-DSOKOL_D3D11",
         .metal => "-DSOKOL_METAL",

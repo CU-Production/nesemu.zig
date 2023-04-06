@@ -47,15 +47,17 @@ export fn init() void {
     state.bind.vertex_buffers[0] = sg.makeBuffer(.{
         .data = sg.asRange(&[_]f32{
             // positions     uv
-            -1.0, -1.0, 0.0, 0.0, 0.0,
-            -1.0, 1.0,  0.0, 0.0, 1.0,
-            1.0,  -1.0, 0.0, 1.0, 0.0,
-
-            -1.0, 1.0,  0.0, 0.0, 1.0,
-            1.0,  1.0,  0.0, 1.0, 1.0,
-            1.0,  -1.0, 0.0, 1.0, 0.0,
+            -1.0, -1.0, 0.0, 0.0, 1.0,
+            1.0,  -1.0, 0.0, 1.0, 1.0,
+            1.0,  1.0,  0.0, 1.0, 0.0,
+            -1.0, 1.0,  0.0, 0.0, 0.0,
         }),
     });
+
+    // cube index buffer
+    state.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange(&[_]u16{
+        0, 1, 2, 0, 2, 3,
+    }) });
 
     // create a small checker-board texture
     var img_desc: sg.ImageDesc = .{
@@ -76,7 +78,10 @@ export fn init() void {
 
     // create a shader and pipeline object
     const shd = sg.makeShader(shaderDesc());
-    var pip_desc: sg.PipelineDesc = .{ .shader = shd };
+    var pip_desc: sg.PipelineDesc = .{
+        .shader = shd,
+        .index_type = .UINT16,
+    };
     pip_desc.layout.attrs[0].format = .FLOAT3;
     pip_desc.layout.attrs[1].format = .FLOAT2;
     state.pip = sg.makePipeline(pip_desc);
@@ -172,6 +177,46 @@ pub fn main() !void {
 fn shaderDesc() sg.ShaderDesc {
     var desc: sg.ShaderDesc = .{};
     switch (sg.queryBackend()) {
+        .D3D11 => {
+            desc.attrs[0].sem_name = "TEXCOORD";
+            desc.attrs[0].sem_index = 0;
+            desc.attrs[1].sem_name = "TEXCOORD";
+            desc.attrs[1].sem_index = 1;
+            desc.vs.source =
+                \\ struct vs_in {
+                \\   float3 pos : TEXCOORD0;
+                \\   float2 texcoord0 : TEXCOORD1;
+                \\ };
+                \\ struct vs_out {
+                \\   float4 pos: SV_Position;
+                \\   float4 color : TEXCOORD0;
+                \\   float2 uv : TEXCOORD1;
+                \\ };
+                \\ vs_out main(vs_in inp) {
+                \\   vs_out outp;
+                \\   outp.pos = float4(inp.pos, 1.0f);
+                \\   outp.uv = inp.texcoord0;
+                \\   outp.color = float4(outp.uv, 0.0f, 1.0f);
+                \\   return outp;
+                \\ }
+            ;
+            desc.fs.images[0].name = "tex";
+            desc.fs.images[0].image_type = ._2D;
+            desc.fs.images[0].sampler_type = .FLOAT;
+            desc.fs.source =
+                \\ Texture2D<float4> tex : register(t0);
+                \\ SamplerState _tex_sampler : register(s0);
+                \\ struct ps_in
+                \\ {
+                \\     float4 color : TEXCOORD0;
+                \\     float2 uv : TEXCOORD1;
+                \\ };
+                \\ float4 main(ps_in stage_input): SV_Target0 {
+                \\   float4 color = tex.Sample(_tex_sampler, stage_input.uv);
+                \\   return float4(color.rgb, 1.0f);
+                \\ }
+            ;
+        },
         .GLCORE33 => {
             desc.attrs[0].name = "position";
             desc.attrs[1].name = "texcoord0";
@@ -197,8 +242,7 @@ fn shaderDesc() sg.ShaderDesc {
                 \\ in vec2 uv;
                 \\ out vec4 frag_color;
                 \\ void main() {
-                \\   vec2 uv_invY = vec2(uv.x, 1.0f - uv.y);
-                \\   frag_color = texture(tex, uv_invY);
+                \\   frag_color = texture(tex, uv);
                 \\ }
             ;
         },
