@@ -16,6 +16,10 @@ jobs:
         # tmp disable ubuntu-latest, for alsa/asoundlib.h X11/extensions/XInput2.h GL/gl.h not found
 
     steps:
+    - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
     - uses: actions/checkout@v3
     - uses: korandoru/setup-zig@v1
       with:
