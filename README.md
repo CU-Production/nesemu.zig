@@ -1,6 +1,6 @@
 # nesemu.zig
 
-NES emulator is zig (with sokol and agnes)
+NES emulator using zig (with sokol and agnes)
 
 This is my hobby project for learning zig.
 
