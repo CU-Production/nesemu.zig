@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest] # tmp disable ubuntu-latest, for alsa/asoundlib.h X11/extensions/XInput2.h GL/gl.h not found
 
     steps:
     - uses: actions/checkout@v3
