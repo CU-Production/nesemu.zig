@@ -164,7 +164,7 @@ pub fn main() !void {
         .width = NES_WIDTH,
         .height = NES_HEIGHT,
         .icon = .{ .sokol_default = true },
-        .window_title = "triangle.zig",
+        .window_title = "nesemu.zig",
         .logger = .{ .func = slog.func },
     });
 }
