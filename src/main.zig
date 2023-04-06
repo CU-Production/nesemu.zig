@@ -183,38 +183,38 @@ fn shaderDesc() sg.ShaderDesc {
             desc.attrs[1].sem_name = "TEXCOORD";
             desc.attrs[1].sem_index = 1;
             desc.vs.source =
-                \\ struct vs_in {
-                \\   float3 pos : TEXCOORD0;
-                \\   float2 texcoord0 : TEXCOORD1;
-                \\ };
-                \\ struct vs_out {
-                \\   float4 pos: SV_Position;
-                \\   float4 color : TEXCOORD0;
-                \\   float2 uv : TEXCOORD1;
-                \\ };
-                \\ vs_out main(vs_in inp) {
-                \\   vs_out outp;
-                \\   outp.pos = float4(inp.pos, 1.0f);
-                \\   outp.uv = inp.texcoord0;
-                \\   outp.color = float4(outp.uv, 0.0f, 1.0f);
-                \\   return outp;
-                \\ }
+                \\struct vs_in {
+                \\  float3 pos : TEXCOORD0;
+                \\  float2 texcoord0 : TEXCOORD1;
+                \\};
+                \\struct vs_out {
+                \\  float4 pos: SV_Position;
+                \\  float4 color : TEXCOORD0;
+                \\  float2 uv : TEXCOORD1;
+                \\};
+                \\vs_out main(vs_in inp) {
+                \\  vs_out outp;
+                \\  outp.pos = float4(inp.pos, 1.0f);
+                \\  outp.uv = inp.texcoord0;
+                \\  outp.color = float4(outp.uv, 0.0f, 1.0f);
+                \\  return outp;
+                \\}
             ;
             desc.fs.images[0].name = "tex";
             desc.fs.images[0].image_type = ._2D;
             desc.fs.images[0].sampler_type = .FLOAT;
             desc.fs.source =
-                \\ Texture2D<float4> tex : register(t0);
-                \\ SamplerState _tex_sampler : register(s0);
-                \\ struct ps_in
-                \\ {
-                \\     float4 color : TEXCOORD0;
-                \\     float2 uv : TEXCOORD1;
-                \\ };
-                \\ float4 main(ps_in stage_input): SV_Target0 {
-                \\   float4 color = tex.Sample(_tex_sampler, stage_input.uv);
-                \\   return float4(color.rgb, 1.0f);
-                \\ }
+                \\Texture2D<float4> tex : register(t0);
+                \\SamplerState _tex_sampler : register(s0);
+                \\struct ps_in
+                \\{
+                \\    float4 color : TEXCOORD0;
+                \\    float2 uv : TEXCOORD1;
+                \\};
+                \\float4 main(ps_in stage_input): SV_Target0 {
+                \\  float4 color = tex.Sample(_tex_sampler, stage_input.uv);
+                \\  return float4(color.rgb, 1.0f);
+                \\}
             ;
         },
         .GLCORE33 => {
