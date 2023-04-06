@@ -12,12 +12,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest] # tmp disable ubuntu-latest, for alsa/asoundlib.h X11/extensions/XInput2.h GL/gl.h not found
+        os: [macos-latest, windows-latest] 
+        # tmp disable ubuntu-latest, for alsa/asoundlib.h X11/extensions/XInput2.h GL/gl.h not found
 
     steps:
     - uses: actions/checkout@v3
     - uses: korandoru/setup-zig@v1
       with:
-        zig-version: master # released versions or master
-        # zig-version: 0.10.1 # released versions or master
+        zig-version: 0.10.1 # released versions or master
     - run: zig build
