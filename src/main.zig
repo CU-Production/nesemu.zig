@@ -29,7 +29,9 @@ pub var pixel_buffer: [NES_WIDTH * NES_HEIGHT]u32 = undefined;
 export fn init() void {
     // init agnes
     state.agnes = c.agnes_make();
-    const rom = "roms/mario.nes";
+    // const rom = "roms/mario.nes";
+    // const rom = "roms/NinjaGaiden.nes";
+    const rom = "roms/hello.nes";
     var ok = c.agnes_load_ines_data_from_path(state.agnes, rom);
     if (!ok) {
         std.log.err("Loading {s} failed.\n\n", .{rom});
