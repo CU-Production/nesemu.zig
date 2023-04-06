@@ -1,0 +1,22 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: korandoru/setup-zig@v1
+      with:
+        zig-version: 0.10.1 # released versions or master
+    - run: zig build
