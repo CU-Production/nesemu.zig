@@ -1,29 +1,71 @@
 const std = @import("std");
-const sokol = @import("lib/sokol-zig/build.zig");
-const agnes = @import("lib/agnes/build.zig");
+const shdc = @import("shdc");
 
-pub fn build(b: *std.build.Builder) void {
+pub fn build(b: *std.Build) !void {
+    // shdc shader compiler
+    const shader_name = "triangle";
+    const shd_step = try buildShader(b, shader_name);
+
+    // build exe
     const target = b.standardTargetOptions(.{});
-    const mode = b.standardReleaseOptions();
+    const optimize = b.standardOptimizeOption(.{});
 
-    const sokol_build = sokol.buildSokol(b, target, mode, .{}, "lib/sokol-zig/");
-    const agnes_build = agnes.buildAgnes(b, target, mode, "lib/agnes/");
+    const dep_sokol = b.dependency("sokol", .{
+        .target = target,
+        .optimize = optimize,
+    });
 
-    const exe = b.addExecutable("nesemu.zig", "src/main.zig");
-    exe.setTarget(target);
-    exe.setBuildMode(mode);
-    exe.addPackagePath("sokol", "lib/sokol-zig/src/sokol/sokol.zig");
-    exe.linkLibrary(sokol_build);
-    exe.addIncludePath("lib/agnes/src");
-    exe.linkLibrary(agnes_build);
-    exe.install();
+    const exe_mod = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
-    const run_cmd = exe.run();
+    const exe = b.addExecutable(.{
+        .name = "testsokolzig",
+        .root_module = exe_mod,
+    });
+    exe.addCSourceFile(.{
+        .file = b.path("lib/agnes/src/agnes.c"),
+        .flags = &[_][]const u8{
+            "-std=c99",
+        },
+    });
+    exe.addIncludePath(b.path("lib/agnes/src"));
+
+    exe.root_module.addImport("sokol", dep_sokol.module("sokol"));
+
+    exe.step.dependOn(&shd_step.step);
+
+    b.installArtifact(exe);
+    const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
+
     if (b.args) |args| {
         run_cmd.addArgs(args);
     }
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+}
+
+fn buildShader(b: *std.Build, shader_name: []const u8) !*std.Build.Step.Run {
+    const shaders_dir = "src/shaders/";
+    const input_path = b.fmt("{s}{s}.glsl", .{ shaders_dir, shader_name });
+    const output_path = b.fmt("{s}{s}.glsl.zig", .{ shaders_dir, shader_name });
+    return shdc.compile(b, .{
+        .dep_shdc = b.dependency("shdc", .{}),
+        .input = b.path(input_path),
+        .output = b.path(output_path),
+        .slang = .{
+            .glsl430 = false,
+            .glsl410 = true,
+            .glsl310es = false,
+            .glsl300es = true,
+            .metal_macos = true,
+            .hlsl5 = true,
+            .wgsl = true,
+        },
+        .reflection = true,
+    });
 }

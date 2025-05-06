@@ -1,0 +1,21 @@
+.{
+    .name = .testsokolzig,
+    .version = "0.0.0",
+    .fingerprint = 0xa424de8edf361702,
+    .minimum_zig_version = "0.14.0",
+    .dependencies = .{
+        .sokol = .{
+            .url = "git+https://github.com/floooh/sokol-zig.git#01bde5a6cf5d934948a1c6e60483e4ab75524891",
+            .hash = "sokol-0.1.0-pb1HK2CJLADmYmRGXRmmpsf17gPLJ0MLAT06psMvPK5f",
+        },
+        .shdc = .{
+            .url = "git+https://github.com/floooh/sokol-tools-bin.git#e3756ae7fb9463ee12004bd3f435c84f73bee7f6",
+            .hash = "sokolshdc-0.1.0-r2KZDkQrkARXk479xVYTXJZnBZgusffeE1MPM4__QT6s",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
