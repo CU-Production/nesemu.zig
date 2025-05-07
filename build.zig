@@ -6,9 +6,20 @@ pub fn build(b: *std.Build) !void {
     const shader_name = "triangle";
     const shd_step = try buildShader(b, shader_name);
 
+    b.release_mode = .small;
+
     // build exe
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
+    const target = b.standardTargetOptions(.{
+        // .default_target = .{
+        //     .cpu_arch = .x86_64,
+        //     .os_tag = .windows,
+        //     .abi = .gnu,
+        // },
+    });
+    const optimize = b.standardOptimizeOption(.{
+        // .preferred_optimize_mode = .Debug,
+        .preferred_optimize_mode = .ReleaseSmall,
+    });
 
     const dep_sokol = b.dependency("sokol", .{
         .target = target,
@@ -19,10 +30,11 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        // .dwarf_format = .@"64",
     });
 
     const exe = b.addExecutable(.{
-        .name = "testsokolzig",
+        .name = "nesemu",
         .root_module = exe_mod,
     });
     exe.addCSourceFile(.{
@@ -47,6 +59,12 @@ pub fn build(b: *std.Build) !void {
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    const lldb = b.addSystemCommand(&[_][]const u8{ "lldb", "--" });
+    lldb.addArtifactArg(exe);
+
+    const lldb_step = b.step("lldb", "Run the app with lldb");
+    lldb_step.dependOn(&lldb.step);
 }
 
 fn buildShader(b: *std.Build, shader_name: []const u8) !*std.Build.Step.Run {
