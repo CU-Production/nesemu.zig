@@ -9,17 +9,8 @@ pub fn build(b: *std.Build) !void {
     b.release_mode = .small;
 
     // build exe
-    const target = b.standardTargetOptions(.{
-        // .default_target = .{
-        //     .cpu_arch = .x86_64,
-        //     .os_tag = .windows,
-        //     .abi = .gnu,
-        // },
-    });
-    const optimize = b.standardOptimizeOption(.{
-        // .preferred_optimize_mode = .Debug,
-        .preferred_optimize_mode = .ReleaseSmall,
-    });
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
 
     const dep_sokol = b.dependency("sokol", .{
         .target = target,
@@ -30,7 +21,6 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
-        // .dwarf_format = .@"64",
     });
 
     const exe = b.addExecutable(.{
