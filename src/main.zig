@@ -63,11 +63,8 @@ export fn init() void {
         .pixel_format = .RGBA8,
         .usage = .STREAM,
     };
-    var X: usize = 0;
-    var Y: usize = 0;
-    while (Y < NES_HEIGHT) : (Y += 1) {
-        X = 0;
-        while (X < NES_WIDTH) : (X += 1) {
+    for (0..NES_HEIGHT) |Y| {
+        for (0..NES_WIDTH) |X| {
             pixel_buffer[X + Y * NES_WIDTH] = 0xFF0000FF;
         }
     }
@@ -102,12 +99,9 @@ export fn frame() void {
         std.log.err("Getting next frame failed.\n", .{});
     }
 
-    var X: i32 = 0;
-    var Y: i32 = 0;
-    while (Y < NES_HEIGHT) : (Y += 1) {
-        X = 0;
-        while (X < NES_WIDTH) : (X += 1) {
-            const color = c.agnes_get_screen_pixel(state.agnes, X, Y);
+    for (0..NES_HEIGHT) |Y| {
+        for (0..NES_WIDTH) |X| {
+            const color = c.agnes_get_screen_pixel(state.agnes, @intCast(X), @intCast(Y));
             const colorABGR: u32 = @as(u32, color.r) | @as(u32, color.g) << 8 | @as(u32, color.b) << 16 | 0xff << 24;
             pixel_buffer[@intCast(X + Y * NES_WIDTH)] = colorABGR;
         }
