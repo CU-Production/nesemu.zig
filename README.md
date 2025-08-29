@@ -5,7 +5,7 @@ NES emulator using zig (with sokol and agnes)
 This is my hobby project for learning zig.
 
 ```bash
-# using zig 0.14.0
+# using zig 0.15.1
 $ zig build run
 ```
 
