@@ -2,15 +2,15 @@
     .name = .testsokolzig,
     .version = "0.0.0",
     .fingerprint = 0xa424de8edf361702,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .sokol = .{
-            .url = "git+https://github.com/floooh/sokol-zig.git#01bde5a6cf5d934948a1c6e60483e4ab75524891",
-            .hash = "sokol-0.1.0-pb1HK2CJLADmYmRGXRmmpsf17gPLJ0MLAT06psMvPK5f",
+            .url = "git+https://github.com/floooh/sokol-zig.git#64416d9093182728d5b7239d83adbec9d3e6282f",
+            .hash = "sokol-0.1.0-pb1HK1HTLQAsjVm5gHGpGI85Rwhwvu2KgCOTH-ZJ9sCS",
         },
         .shdc = .{
-            .url = "git+https://github.com/floooh/sokol-tools-bin.git#e3756ae7fb9463ee12004bd3f435c84f73bee7f6",
-            .hash = "sokolshdc-0.1.0-r2KZDkQrkARXk479xVYTXJZnBZgusffeE1MPM4__QT6s",
+            .url = "git+https://github.com/floooh/sokol-tools-bin#d1a6a719f24852f104a7f5481beb31e42ebf5f8a",
+            .hash = "sokolshdc-0.1.0-r2KZDtYXlQS2C2CNekXgsRqhyKk5JtGzBlFBTMX27o0f",
         },
     },
     .paths = .{

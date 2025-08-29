@@ -15,18 +15,18 @@ const std = @import("std");
 //            ATTR_triangle_position => 0
 //            ATTR_triangle_texcoord0 => 1
 //    Bindings:
-//        Image 'tex':
+//        Texture 'tex':
 //            Image type: ._2D
 //            Sample type: .FLOAT
 //            Multisampled: false
-//            Bind slot: IMG_tex => 0
+//            Bind slot: VIEW_tex => 0
 //        Sampler 'smp':
 //            Type: .FILTERING
 //            Bind slot: SMP_smp => 0
 //
 pub const ATTR_triangle_position = 0;
 pub const ATTR_triangle_texcoord0 = 1;
-pub const IMG_tex = 0;
+pub const VIEW_tex = 0;
 pub const SMP_smp = 0;
 //
 //    #version 410
@@ -471,7 +471,7 @@ const vs_source_wgsl = [560]u8 {
 //
 //    @binding(64) @group(1) var tex : texture_2d<f32>;
 //
-//    @binding(80) @group(1) var smp : sampler;
+//    @binding(65) @group(1) var smp : sampler;
 //
 //    var<private> uv : vec2f;
 //
@@ -503,7 +503,7 @@ const fs_source_wgsl = [490]u8 {
     0x69,0x6e,0x67,0x28,0x36,0x34,0x29,0x20,0x40,0x67,0x72,0x6f,0x75,0x70,0x28,0x31,
     0x29,0x20,0x76,0x61,0x72,0x20,0x74,0x65,0x78,0x20,0x3a,0x20,0x74,0x65,0x78,0x74,
     0x75,0x72,0x65,0x5f,0x32,0x64,0x3c,0x66,0x33,0x32,0x3e,0x3b,0x0a,0x0a,0x40,0x62,
-    0x69,0x6e,0x64,0x69,0x6e,0x67,0x28,0x38,0x30,0x29,0x20,0x40,0x67,0x72,0x6f,0x75,
+    0x69,0x6e,0x64,0x69,0x6e,0x67,0x28,0x36,0x35,0x29,0x20,0x40,0x67,0x72,0x6f,0x75,
     0x70,0x28,0x31,0x29,0x20,0x76,0x61,0x72,0x20,0x73,0x6d,0x70,0x20,0x3a,0x20,0x73,
     0x61,0x6d,0x70,0x6c,0x65,0x72,0x3b,0x0a,0x0a,0x76,0x61,0x72,0x3c,0x70,0x72,0x69,
     0x76,0x61,0x74,0x65,0x3e,0x20,0x75,0x76,0x20,0x3a,0x20,0x76,0x65,0x63,0x32,0x66,
@@ -540,16 +540,16 @@ pub fn triangleShaderDesc(backend: sg.Backend) sg.ShaderDesc {
             desc.attrs[0].glsl_name = "position";
             desc.attrs[1].base_type = .FLOAT;
             desc.attrs[1].glsl_name = "texcoord0";
-            desc.images[0].stage = .FRAGMENT;
-            desc.images[0].multisampled = false;
-            desc.images[0].image_type = ._2D;
-            desc.images[0].sample_type = .FLOAT;
+            desc.views[0].texture.stage = .FRAGMENT;
+            desc.views[0].texture.image_type = ._2D;
+            desc.views[0].texture.sample_type = .FLOAT;
+            desc.views[0].texture.multisampled = false;
             desc.samplers[0].stage = .FRAGMENT;
             desc.samplers[0].sampler_type = .FILTERING;
-            desc.image_sampler_pairs[0].stage = .FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
-            desc.image_sampler_pairs[0].glsl_name = "tex_smp";
+            desc.texture_sampler_pairs[0].stage = .FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
+            desc.texture_sampler_pairs[0].glsl_name = "tex_smp";
         },
         .GLES3 => {
             desc.vertex_func.source = &vs_source_glsl300es;
@@ -560,16 +560,16 @@ pub fn triangleShaderDesc(backend: sg.Backend) sg.ShaderDesc {
             desc.attrs[0].glsl_name = "position";
             desc.attrs[1].base_type = .FLOAT;
             desc.attrs[1].glsl_name = "texcoord0";
-            desc.images[0].stage = .FRAGMENT;
-            desc.images[0].multisampled = false;
-            desc.images[0].image_type = ._2D;
-            desc.images[0].sample_type = .FLOAT;
+            desc.views[0].texture.stage = .FRAGMENT;
+            desc.views[0].texture.image_type = ._2D;
+            desc.views[0].texture.sample_type = .FLOAT;
+            desc.views[0].texture.multisampled = false;
             desc.samplers[0].stage = .FRAGMENT;
             desc.samplers[0].sampler_type = .FILTERING;
-            desc.image_sampler_pairs[0].stage = .FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
-            desc.image_sampler_pairs[0].glsl_name = "tex_smp";
+            desc.texture_sampler_pairs[0].stage = .FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
+            desc.texture_sampler_pairs[0].glsl_name = "tex_smp";
         },
         .D3D11 => {
             desc.vertex_func.source = &vs_source_hlsl5;
@@ -584,17 +584,17 @@ pub fn triangleShaderDesc(backend: sg.Backend) sg.ShaderDesc {
             desc.attrs[1].base_type = .FLOAT;
             desc.attrs[1].hlsl_sem_name = "TEXCOORD";
             desc.attrs[1].hlsl_sem_index = 1;
-            desc.images[0].stage = .FRAGMENT;
-            desc.images[0].multisampled = false;
-            desc.images[0].image_type = ._2D;
-            desc.images[0].sample_type = .FLOAT;
-            desc.images[0].hlsl_register_t_n = 0;
+            desc.views[0].texture.stage = .FRAGMENT;
+            desc.views[0].texture.image_type = ._2D;
+            desc.views[0].texture.sample_type = .FLOAT;
+            desc.views[0].texture.multisampled = false;
+            desc.views[0].texture.hlsl_register_t_n = 0;
             desc.samplers[0].stage = .FRAGMENT;
             desc.samplers[0].sampler_type = .FILTERING;
             desc.samplers[0].hlsl_register_s_n = 0;
-            desc.image_sampler_pairs[0].stage = .FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
+            desc.texture_sampler_pairs[0].stage = .FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
         },
         .METAL_MACOS => {
             desc.vertex_func.source = &vs_source_metal_macos;
@@ -603,17 +603,17 @@ pub fn triangleShaderDesc(backend: sg.Backend) sg.ShaderDesc {
             desc.fragment_func.entry = "main0";
             desc.attrs[0].base_type = .FLOAT;
             desc.attrs[1].base_type = .FLOAT;
-            desc.images[0].stage = .FRAGMENT;
-            desc.images[0].multisampled = false;
-            desc.images[0].image_type = ._2D;
-            desc.images[0].sample_type = .FLOAT;
-            desc.images[0].msl_texture_n = 0;
+            desc.views[0].texture.stage = .FRAGMENT;
+            desc.views[0].texture.image_type = ._2D;
+            desc.views[0].texture.sample_type = .FLOAT;
+            desc.views[0].texture.multisampled = false;
+            desc.views[0].texture.msl_texture_n = 0;
             desc.samplers[0].stage = .FRAGMENT;
             desc.samplers[0].sampler_type = .FILTERING;
             desc.samplers[0].msl_sampler_n = 0;
-            desc.image_sampler_pairs[0].stage = .FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
+            desc.texture_sampler_pairs[0].stage = .FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
         },
         .WGPU => {
             desc.vertex_func.source = &vs_source_wgsl;
@@ -622,17 +622,17 @@ pub fn triangleShaderDesc(backend: sg.Backend) sg.ShaderDesc {
             desc.fragment_func.entry = "main";
             desc.attrs[0].base_type = .FLOAT;
             desc.attrs[1].base_type = .FLOAT;
-            desc.images[0].stage = .FRAGMENT;
-            desc.images[0].multisampled = false;
-            desc.images[0].image_type = ._2D;
-            desc.images[0].sample_type = .FLOAT;
-            desc.images[0].wgsl_group1_binding_n = 64;
+            desc.views[0].texture.stage = .FRAGMENT;
+            desc.views[0].texture.image_type = ._2D;
+            desc.views[0].texture.sample_type = .FLOAT;
+            desc.views[0].texture.multisampled = false;
+            desc.views[0].texture.wgsl_group1_binding_n = 64;
             desc.samplers[0].stage = .FRAGMENT;
             desc.samplers[0].sampler_type = .FILTERING;
-            desc.samplers[0].wgsl_group1_binding_n = 80;
-            desc.image_sampler_pairs[0].stage = .FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
+            desc.samplers[0].wgsl_group1_binding_n = 65;
+            desc.texture_sampler_pairs[0].stage = .FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
         },
         else => {},
     }
@@ -647,8 +647,8 @@ pub fn triangleAttrSlot(attr_name: []const u8) ?usize {
     }
     return null;
 }
-pub fn triangleImageSlot(img_name: []const u8) ?usize {
-    if (std.mem.eql(u8, img_name, "tex")) {
+pub fn triangleTextureSlot(tex_name: []const u8) ?usize {
+    if (std.mem.eql(u8, tex_name, "tex")) {
         return 0;
     }
     return null;
@@ -659,11 +659,11 @@ pub fn triangleSamplerSlot(smp_name: []const u8) ?usize {
     }
     return null;
 }
-pub fn triangleUniformblockSlot(ub_name: []const u8) ?usize {
+pub fn triangleUniformBlockSlot(ub_name: []const u8) ?usize {
     _ = ub_name;
     return null;
 }
-pub fn triangleUniformblockSize(ub_name: []const u8) ?usize {
+pub fn triangleUniformBlockSize(ub_name: []const u8) ?usize {
     _ = ub_name;
     return null;
 }
@@ -677,7 +677,11 @@ pub fn triangleUniformDesc(ub_name: []const u8, u_name: []const u8) ?sg.GlslShad
     _ = u_name;
     return null;
 }
-pub fn triangleStoragebufferSlot(sbuf_name: []const u8) ?usize {
+pub fn triangleStorageBufferSlot(sbuf_name: []const u8) ?usize {
     _ = sbuf_name;
+    return null;
+}
+pub fn triangleStorageImageSlot(simg_name: []const u8) ?usize {
+    _ = simg_name;
     return null;
 }

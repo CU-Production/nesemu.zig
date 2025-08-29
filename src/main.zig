@@ -13,6 +13,7 @@ const NES_HEIGHT = 240;
 const state = struct {
     var bind: sg.Bindings = .{};
     var pip: sg.Pipeline = .{};
+    var tmp_image: sg.Image = .{};
     var input: c.agnes_input_t = .{
         .a = false,
         .b = false,
@@ -53,22 +54,28 @@ export fn init() void {
         }),
     });
 
-    state.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange(&[_]u16{
-        0, 1, 2, 0, 2, 3,
-    }) });
+    state.bind.index_buffer = sg.makeBuffer(.{
+        .usage = .{ .index_buffer = true },
+        .data = sg.asRange(&[_]u16{ 0, 1, 2, 0, 2, 3 }),
+    });
 
     const img_desc: sg.ImageDesc = .{
         .width = NES_WIDTH,
         .height = NES_HEIGHT,
         .pixel_format = .RGBA8,
-        .usage = .STREAM,
+        .usage = .{ .dynamic_update = true },
     };
     for (0..NES_HEIGHT) |Y| {
         for (0..NES_WIDTH) |X| {
             pixel_buffer[X + Y * NES_WIDTH] = 0xFF0000FF;
         }
     }
-    state.bind.images[shd.IMG_tex] = sg.makeImage(img_desc);
+
+    state.tmp_image = sg.makeImage(img_desc);
+
+    state.bind.views[shd.VIEW_tex] = sg.makeView(.{ .texture = .{
+        .image = state.tmp_image,
+    } });
 
     state.bind.samplers[shd.SMP_smp] = sg.makeSampler(.{
         .min_filter = .LINEAR,
@@ -110,7 +117,7 @@ export fn frame() void {
     // copy emulator pixel data into upscaling source texture
     var image_data = sg.ImageData{};
     image_data.subimage[0][0] = sg.asRange(&pixel_buffer);
-    sg.updateImage(state.bind.images[shd.IMG_tex], image_data);
+    sg.updateImage(state.tmp_image, image_data);
 
     // default pass-action clears to grey
     sg.beginPass(.{ .swapchain = sglue.swapchain() });

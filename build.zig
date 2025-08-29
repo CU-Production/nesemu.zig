@@ -4,7 +4,7 @@ const shdc = @import("shdc");
 pub fn build(b: *std.Build) !void {
     // shdc shader compiler
     const shader_name = "triangle";
-    const shd_step = try buildShader(b, shader_name);
+    const opt_shd_step = try buildShader(b, shader_name);
 
     b.release_mode = .small;
 
@@ -37,7 +37,9 @@ pub fn build(b: *std.Build) !void {
 
     exe.root_module.addImport("sokol", dep_sokol.module("sokol"));
 
-    exe.step.dependOn(&shd_step.step);
+    if (opt_shd_step) |shd_step| {
+        exe.step.dependOn(shd_step);
+    }
 
     b.installArtifact(exe);
     const run_cmd = b.addRunArtifact(exe);
@@ -57,14 +59,12 @@ pub fn build(b: *std.Build) !void {
     lldb_step.dependOn(&lldb.step);
 }
 
-fn buildShader(b: *std.Build, shader_name: []const u8) !*std.Build.Step.Run {
+fn buildShader(b: *std.Build, shader_name: []const u8) !?*std.Build.Step {
     const shaders_dir = "src/shaders/";
-    const input_path = b.fmt("{s}{s}.glsl", .{ shaders_dir, shader_name });
-    const output_path = b.fmt("{s}{s}.glsl.zig", .{ shaders_dir, shader_name });
-    return shdc.compile(b, .{
-        .dep_shdc = b.dependency("shdc", .{}),
-        .input = b.path(input_path),
-        .output = b.path(output_path),
+    return shdc.createSourceFile(b, .{
+        .shdc_dep = b.dependency("shdc", .{}),
+        .input = b.fmt("{s}{s}.glsl", .{ shaders_dir, shader_name }),
+        .output = b.fmt("{s}{s}.glsl.zig", .{ shaders_dir, shader_name }),
         .slang = .{
             .glsl430 = false,
             .glsl410 = true,
