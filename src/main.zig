@@ -4,6 +4,7 @@ const slog = sokol.log;
 const sg = sokol.gfx;
 const sapp = sokol.app;
 const sglue = sokol.glue;
+const saudio = sokol.audio;
 const shd = @import("shaders/triangle.glsl.zig");
 const c = @cImport(@cInclude("agnes.h"));
 
@@ -28,6 +29,25 @@ const state = struct {
 };
 pub var pixel_buffer: [NES_WIDTH * NES_HEIGHT]u32 = undefined;
 
+export fn audio_callback(buffer: [*c]f32, num_frames: i32, num_channels: i32) void {
+    if (state.agnes == null) {
+        for (0..@intCast(num_frames * num_channels)) |i| {
+            buffer[i] = 0.0;
+        }
+        return;
+    }
+
+    // Fill the audio buffer with samples from the APU
+    for (0..@intCast(num_frames)) |i| {
+        const sample = c.agnes_get_audio_sample(state.agnes);
+
+        // Write to all channels (mono or stereo)
+        for (0..@intCast(num_channels)) |ch| {
+            buffer[i * @as(usize, @intCast(num_channels)) + ch] = sample;
+        }
+    }
+}
+
 export fn init() void {
     // init agnes
     state.agnes = c.agnes_make();
@@ -42,6 +62,14 @@ export fn init() void {
     sg.setup(.{
         .environment = sglue.environment(),
         .logger = .{ .func = slog.func },
+    });
+
+    saudio.setup(.{
+        .logger = .{ .func = slog.func },
+        .buffer_frames = 4096,
+        .sample_rate = 44100,
+        .num_channels = 1,
+        .stream_cb = audio_callback,
     });
 
     state.bind.vertex_buffers[0] = sg.makeBuffer(.{
