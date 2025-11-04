@@ -27,13 +27,6 @@ pub fn build(b: *std.Build) !void {
         .name = "nesemu",
         .root_module = exe_mod,
     });
-    exe.addCSourceFile(.{
-        .file = b.path("lib/agnes/src/agnes.c"),
-        .flags = &[_][]const u8{
-            "-std=c99",
-        },
-    });
-    exe.addIncludePath(b.path("lib/agnes/src"));
 
     exe.root_module.addImport("sokol", dep_sokol.module("sokol"));
 

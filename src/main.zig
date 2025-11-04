@@ -6,7 +6,7 @@ const sapp = sokol.app;
 const sglue = sokol.glue;
 const saudio = sokol.audio;
 const shd = @import("shaders/triangle.glsl.zig");
-const c = @cImport(@cInclude("agnes.h"));
+const agnes = @import("agnes.zig");
 
 const NES_WIDTH = 256;
 const NES_HEIGHT = 240;
@@ -15,7 +15,7 @@ const state = struct {
     var bind: sg.Bindings = .{};
     var pip: sg.Pipeline = .{};
     var tmp_image: sg.Image = .{};
-    var input: c.agnes_input_t = .{
+    var input: agnes.Input = .{
         .a = false,
         .b = false,
         .select = false,
@@ -25,12 +25,12 @@ const state = struct {
         .left = false,
         .right = false,
     };
-    var agnes: ?*c.agnes_t = null;
+    var nes: ?*agnes.Agnes = null;
 };
 pub var pixel_buffer: [NES_WIDTH * NES_HEIGHT]u32 = undefined;
 
 export fn audio_callback(buffer: [*c]f32, num_frames: i32, num_channels: i32) void {
-    if (state.agnes == null) {
+    if (state.nes == null) {
         for (0..@intCast(num_frames * num_channels)) |i| {
             buffer[i] = 0.0;
         }
@@ -39,7 +39,7 @@ export fn audio_callback(buffer: [*c]f32, num_frames: i32, num_channels: i32) vo
 
     // Fill the audio buffer with samples from the APU
     for (0..@intCast(num_frames)) |i| {
-        const sample = c.agnes_get_audio_sample(state.agnes);
+        const sample = agnes.getAudioSample(state.nes.?);
 
         // Write to all channels (mono or stereo)
         for (0..@intCast(num_channels)) |ch| {
@@ -50,11 +50,12 @@ export fn audio_callback(buffer: [*c]f32, num_frames: i32, num_channels: i32) vo
 
 export fn init() void {
     // init agnes
-    state.agnes = c.agnes_make();
-    // const rom = "roms/mario.nes";
+    state.nes = agnes.make();
+    const rom = "roms/mario.nes";
     // const rom = "roms/NinjaGaiden.nes";
-    const rom = "roms/hello.nes";
-    const ok = c.agnes_load_ines_data_from_path(state.agnes, rom);
+    // const rom = "roms/Contra.nes";
+    // const rom = "roms/hello.nes";
+    const ok = agnes.loadInesDataFromPath(state.nes.?, rom);
     if (!ok) {
         std.log.err("Loading {s} failed.\n\n", .{rom});
     }
@@ -127,16 +128,16 @@ export fn init() void {
 export fn frame() void {
     // agnes update
     const tmpinput = &state.input;
-    c.agnes_set_input(state.agnes, tmpinput, null);
+    agnes.setInput(state.nes.?, tmpinput, null);
 
-    const ok = c.agnes_next_frame(state.agnes);
+    const ok = agnes.nextFrame(state.nes.?);
     if (!ok) {
         std.log.err("Getting next frame failed.\n", .{});
     }
 
     for (0..NES_HEIGHT) |Y| {
         for (0..NES_WIDTH) |X| {
-            const color = c.agnes_get_screen_pixel(state.agnes, @intCast(X), @intCast(Y));
+            const color = agnes.getScreenPixel(state.nes.?, @intCast(X), @intCast(Y));
             const colorABGR: u32 = @as(u32, color.r) | @as(u32, color.g) << 8 | @as(u32, color.b) << 16 | 0xff << 24;
             pixel_buffer[@intCast(X + Y * NES_WIDTH)] = colorABGR;
         }
@@ -158,7 +159,7 @@ export fn frame() void {
 
 export fn cleanup() void {
     sg.shutdown();
-    c.agnes_destroy(state.agnes);
+    agnes.destroy(state.nes.?);
 }
 
 export fn input(event: ?*const sapp.Event) void {
